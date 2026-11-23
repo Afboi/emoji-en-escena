@@ -95,8 +95,31 @@ const answerSchema = z.object({
   answer: z.string().trim().min(1).max(160),
 });
 function normalizeAnswer(value: string) {
-  return value.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLocaleLowerCase("es").replace(/[^a-z0-9 ]/g, " ").replace(/\\s+/g, " ").trim();
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
 }
+function exactAnswer(value: string) {
+  return value.normalize("NFC").toLocaleLowerCase("es").replace(/\s+/g, " ").trim();
+}
+function editDistance(a: string, b: string): number {
+  if (Math.abs(a.length - b.length) > 1) return 2;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const row = [i];
+    for (let j = 1; j <= b.length; j++) row[j] = Math.min(row[j - 1] + 1, prev[j] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = row;
+  }
+  return prev[b.length];
+}
+function gradeAnswer(input: string, expected: string): { isCorrect: boolean; points: number } {
+  if (exactAnswer(input) === exactAnswer(expected)) return { isCorrect: true, points: 3 };
+  const typed = normalizeAnswer(input);
+  const answer = normalizeAnswer(expected);
+  if (typed === answer) return { isCorrect: true, points: 1 };
+  const withoutArticle = answer.replace(/^(el|la|los|las|un|una)\s+/, "");
+  if (typed === withoutArticle || (typed.length >= 5 && editDistance(typed, answer) === 1)) return { isCorrect: true, points: 1 };
+  return { isCorrect: false, points: 0 };
+}
+
 export const submitTheatreAnswer = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => answerSchema.parse(input))
   .handler(async ({ data }) => {
@@ -107,10 +130,11 @@ export const submitTheatreAnswer = createServerFn({ method: "POST" })
     if (error || !room || player.room_code !== data.code) throw new Error("Sala no válida.");
     const state = room.private_state as unknown as { theatreMode?: boolean; answerShown?: boolean; status?: string; index?: number; playlist?: { answer?: string }[]; timer?: { enabled?: boolean; running?: boolean; endsAt?: number | null; duration?: number } };
     if (state.theatreMode !== true || state.answerShown || state.status !== "playing" || !state.playlist?.[state.index ?? -1]) throw new Error("No hay una pregunta abierta.");
-    const correct = normalizeAnswer(data.answer) === normalizeAnswer(state.playlist[state.index!].answer ?? "");
+    const grading = gradeAnswer(data.answer, state.playlist[state.index!].answer ?? "");
+    const correct = grading.isCorrect;
     const remaining = state.timer?.endsAt ? Math.max(0, state.timer.endsAt - Date.now()) : 0;
     if (state.timer?.enabled && state.timer.running && remaining <= 0) throw new Error("Se acabó el tiempo para responder.");
-    const points = correct ? (state.timer?.enabled && state.timer.running ? Math.max(100, Math.round(1000 * Math.min(1, remaining / Math.max(1000, (state.timer?.duration ?? 45) * 1000)))) : 1000) : 0;
+    const points = grading.points;
     const { data: result, error: scoreError } = await supabaseAdmin.rpc("record_theatre_answer", {
       p_player_id: data.playerId, p_question_index: state.index!, p_answer: data.answer, p_correct: correct, p_points: points,
     });
