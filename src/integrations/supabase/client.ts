@@ -61,9 +61,21 @@ function createSupabaseClient() {
     throw new Error(message);
   }
 
-  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  // Browser HTTP headers only support Latin-1/ASCII-compatible values.
+  // Strip accidental surrounding whitespace/BOM from dashboard copy-paste,
+  // and fail with a safe diagnostic rather than an opaque Headers.set error.
+  const cleanUrl = SUPABASE_URL.replace(/^\\uFEFF/, "").trim();
+  const cleanKey = SUPABASE_PUBLISHABLE_KEY.replace(/^\\uFEFF/, "").trim();
+  if (/[^\\x00-\\x7F]/.test(cleanKey)) {
+    throw new Error("La clave pública de Supabase contiene caracteres no válidos. En Netlify, copiá nuevamente VITE_SUPABASE_PUBLISHABLE_KEY desde Supabase (sin comillas ni espacios).");
+  }
+  if (/[^\\x00-\\x7F]/.test(cleanUrl)) {
+    throw new Error("La URL de Supabase contiene caracteres no válidos. Revisá VITE_SUPABASE_URL en Netlify.");
+  }
+
+  return createClient<Database>(cleanUrl, cleanKey, {
     global: {
-      fetch: createSupabaseFetch(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY),
+      fetch: createSupabaseFetch(cleanUrl, cleanKey),
     },
     auth: {
       storage: typeof window === 'undefined' ? undefined : window.localStorage,
