@@ -30,7 +30,7 @@ export function resetTimer(t: TimerState): TimerState {
 }
 
 export function roundInfo(index: number, total: number, rounds: number) {
-  const per = Math.max(1, Math.ceil(total / Math.max(1, rounds)));
+  const per = Math.max(1, Math.min(20, Math.floor(rounds) || 10));
   return { round: Math.floor(index / per) + 1, per, inRound: (index % per) + 1 };
 }
 
@@ -44,17 +44,14 @@ export function newGame(room: string, playlist: Question[] = []): GameState {
     room,
     title: "Emoji en Escena",
     status: "idle",
-    rounds: 3,
+    rounds: 10,
     playlist,
     index: 0,
     cluesShown: 0,
     answerShown: false,
     showScoreboard: false,
     scoreTitle: null,
-    teams: [
-      { id: uid(), name: "Equipo Coral", score: 0 },
-      { id: uid(), name: "Equipo Violeta", score: 0 },
-    ],
+    teams: [],
     timer: { enabled: true, duration: 45, running: false, endsAt: null, remainingMs: 45000 },
     resumeTimer: false,
     updatedAt: Date.now(),
