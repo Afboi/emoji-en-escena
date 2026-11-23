@@ -242,12 +242,23 @@ export function useScreenRoom(code: string | null) {
       const fetchNow = async () => {
         const { data, error } = await supabase.from("rooms").select("public_state").eq("code", code).maybeSingle();
         if (!alive) return;
-        if (error) return setStatus("offline");
-        if (!data) return setNotFound(true);
+        if (error) {
+          setStatus("offline");
+          return;
+        }
+        if (!data) {
+          setNotFound(true);
+          return;
+        }
+        setNotFound(false);
         const ps = data.public_state as unknown as PublicState;
         setState(ps && "room" in ps ? ps : null);
+        // Keep the projector updated even if realtime websocket is unavailable.
+        setStatus("online");
       };
       void fetchNow();
+      // Poll the public state as a fallback if realtime cannot connect.
+      const poll = setInterval(() => void fetchNow(), 2500);
       const ch = supabase
         .channel(`presence-${code}`, { config: { presence: { key: `screen-${Math.random().toString(36).slice(2)}` } } })
         .on("postgres_changes", { event: "UPDATE", schema: "public", table: "rooms", filter: `code=eq.${code}` }, (p) => {
@@ -266,6 +277,7 @@ export function useScreenRoom(code: string | null) {
       window.addEventListener("online", onVis);
       return () => {
         alive = false;
+        clearInterval(poll);
         document.removeEventListener("visibilitychange", onVis);
         window.removeEventListener("online", onVis);
         void supabase.removeChannel(ch);
