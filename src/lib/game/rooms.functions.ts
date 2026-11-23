@@ -105,7 +105,8 @@ export const submitTheatreAnswer = createServerFn({ method: "POST" })
     if (state.theatreJoinOpen !== true || state.status !== "playing" || !state.playlist?.[state.index ?? -1]) throw new Error("No hay una pregunta abierta.");
     const correct = normalizeAnswer(data.answer) === normalizeAnswer(state.playlist[state.index!].answer ?? "");
     const remaining = state.timer?.endsAt ? Math.max(0, state.timer.endsAt - Date.now()) : 0;
-    const points = correct ? Math.max(100, Math.round(1000 * Math.min(1, remaining / Math.max(1000, (state.timer?.duration ?? 45) * 1000)))) : 0;
+    if (state.timer?.enabled && state.timer.running && remaining <= 0) throw new Error("Se acabó el tiempo para responder.");
+    const points = correct ? (state.timer?.enabled && state.timer.running ? Math.max(100, Math.round(1000 * Math.min(1, remaining / Math.max(1000, (state.timer?.duration ?? 45) * 1000)))) : 1000) : 0;
     const { data: result, error: scoreError } = await supabaseAdmin.rpc("record_theatre_answer" as never, {
       p_player_id: data.playerId, p_question_index: state.index!, p_answer: data.answer, p_correct: correct, p_points: points,
     } as never);
