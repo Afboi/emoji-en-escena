@@ -36,11 +36,11 @@ function Index() {
           <div className="text-5xl">📱</div>
           <h2 className="font-display text-2xl font-black">Modo teatro interactivo</h2>
           <p className="text-muted-foreground">Para el teatro: los huéspedes se unen con QR desde sus teléfonos, responden y compiten por el ranking.</p>
-          <span className="rounded-full border border-highlight/40 px-4 py-2 text-sm font-semibold text-highlight">Próxima implementación · requiere conexión en línea</span>
+          <span className="rounded-full border border-highlight/40 px-4 py-2 text-sm font-semibold text-highlight">Disponible en el centro de comando · requiere Supabase</span>
         </section>
       </div>
       <p className="max-w-xl text-sm text-muted-foreground">
-        El modo escenario sigue funcionando sin que los participantes tengan que conectarse. La modalidad interactiva se habilitará como una experiencia separada.
+        El modo escenario sigue funcionando sin que los participantes tengan que conectarse. La modalidad interactiva se activa desde el centro de comando y requiere backend en línea.
       </p>
     </main>
   );
