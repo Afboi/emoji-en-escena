@@ -11,6 +11,13 @@ El proyecto está migrado a este repositorio y se ejecuta como una aplicación w
 3. Inicia con `npm run dev` y abre la URL local que muestra Vite.
 4. Abre `/control` en el monitor privado y `/screen?room=CODIGO` en la pantalla pública. Para tres monitores, abre otra pestaña de `/screen` si deseas una vista de apoyo.
 
+## Modalidades
+
+- **Modo escenario / piscina:** sigue usando la consola del animador y puntos manuales; no necesita teléfonos.
+- **Modo teatro interactivo:** los participantes ingresan en `/join?room=CODIGO`, envían respuestas desde el celular y suman puntos automáticamente. El panel muestra el QR y el ranking puede aparecer en la pantalla de proyección.
+
+Para habilitar el modo teatro en Supabase, ejecutá el SQL de `supabase/migrations/202611230001_theatre_mode.sql` en el SQL Editor de tu proyecto. Luego desplegá la aplicación con las variables de Supabase configuradas; las salas entre dispositivos requieren HTTPS y backend activo. El QR se genera mediante QRServer y requiere conexión a internet en el dispositivo del animador.
+
 ## Uso sin backend
 
 Sin variables de Supabase, la aplicación funciona en modo local y sincroniza las pantallas abiertas en el mismo navegador mediante BroadcastChannel. Es ideal para el PC del animador y sus monitores conectados. Para sincronizar entre computadoras distintas, configura Supabase (ver `.env.example`).
