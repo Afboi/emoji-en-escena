@@ -179,6 +179,23 @@ function LiveTab({ state, update, now, offset, screenPath, screens, creds }: { s
           {total > 0 && <p className="mt-3 text-xs text-muted-foreground">{total} preguntas · {Math.ceil(total / info.per)} rondas de hasta {info.per}</p>}
         </Panel>
 
+        <Panel title="Modo teatro interactivo" right={<span className={state.theatreMode ? "text-success text-xs font-bold" : "text-muted-foreground text-xs"}>{state.theatreMode ? "ACTIVO" : "DESACTIVADO"}</span>}>
+          <div className="flex flex-wrap gap-2">
+            <Btn variant={state.theatreMode ? "danger" : "highlight"} onClick={() => update((s) => ({ ...s, theatreMode: !s.theatreMode, theatreJoinOpen: s.theatreMode ? false : s.theatreJoinOpen }))}>
+              {state.theatreMode ? "Desactivar modo teatro" : "Activar modo teatro"}
+            </Btn>
+            <Btn disabled={!state.theatreMode} variant={state.theatreJoinOpen ? "danger" : "primary"} onClick={() => update((s) => ({ ...s, theatreJoinOpen: !s.theatreJoinOpen }))}>
+              {state.theatreJoinOpen ? "🔒 Cerrar ingreso" : "📱 Abrir ingreso"}
+            </Btn>
+            <Btn disabled={!state.theatreMode} onClick={() => window.open(`/join?room=${state.room}`, "_blank")}>Vista de ingreso ↗</Btn>
+          </div>
+          <div className="mt-3 rounded-lg bg-secondary/60 p-3 text-sm">
+            <p className="font-bold">Código para el público: <span className="font-display tracking-widest text-highlight">{state.room}</span></p>
+            <p className="mt-1 text-muted-foreground">Cuando el ingreso esté abierto, los participantes pueden entrar en la página <span className="font-mono">/join</span> desde sus celulares e introducir este código.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Para celulares, la aplicación debe estar publicada en una dirección web accesible desde la red del evento; localhost solo funciona en esta computadora.</p>
+          </div>
+        </Panel>
+
         <Panel
           title={live ? `Pregunta actual · Ronda ${info.round} · ${info.inRound}/${Math.min(info.per, total - (info.round - 1) * info.per)} (${state.index + 1} de ${total})` : "Pregunta actual"}
           right={<Btn size="sm" disabled={!live || state.index === 0} onClick={() => update((s) => goTo(s, s.index - 1))}>◀ Anterior</Btn>}
