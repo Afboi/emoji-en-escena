@@ -22,7 +22,10 @@ function JoinPage() {
   const [answer, setAnswer] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [submittedIndex, setSubmittedIndex] = useState<number | null>(null);
   const { state } = useScreenRoom(player?.room ?? null);
+  const questionIndex = state?.index ?? -1;
+  const alreadySubmitted = submittedIndex === questionIndex;
 
   useEffect(() => {
     try {
@@ -47,10 +50,12 @@ function JoinPage() {
 
   async function sendAnswer(e: React.FormEvent) {
     e.preventDefault(); if (!player || !answer.trim()) return;
+    if (alreadySubmitted) return;
     setBusy(true); setMessage("");
     try {
       const result = await submitTheatreAnswer({ data: { code: player.room, playerId: player.playerId, answer: answer.trim() } });
-      setMessage(result.accepted ? (result.correct ? `¡Correcto! +${result.points} puntos` : "Respuesta registrada. ¡Suerte en la próxima!") : "Ya habías respondido esta pregunta.");
+      setSubmittedIndex(questionIndex);
+      setMessage(result.accepted ? (result.correct ? `¡Correcto! +${result.points} ${result.points === 1 ? "punto" : "puntos"}` : "Respuesta registrada. ¡Suerte en la próxima!") : "Ya habías respondido esta pregunta.");
       setAnswer("");
     } catch (err) { setMessage(err instanceof Error ? err.message : "No se pudo enviar."); }
     finally { setBusy(false); }
@@ -58,7 +63,7 @@ function JoinPage() {
 
   return <main className="flex min-h-screen items-center justify-center bg-stage-gradient px-4 py-8">
     <section className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-xl">
-      <div className="mb-5 text-center"><div className="text-5xl">🎬📱</div><h1 className="mt-3 font-display text-3xl font-black text-show-gradient">Emoji en Escena</h1><p className="text-muted-foreground">Modo teatro interactivo</p></div>
+      <div className="mb-5 text-center"><div className="mb-2 text-xs font-bold tracking-widest text-highlight">FIESTA RESORT</div><div className="text-5xl">🎬📱</div><h1 className="mt-3 font-display text-3xl font-black text-show-gradient">Emoji en Escena</h1><p className="text-muted-foreground">Modo teatro interactivo</p></div>
       {!player ? <form onSubmit={enter} className="flex flex-col gap-3">
         <label className="text-sm font-semibold">Código de sala</label><input required maxLength={8} value={code} onChange={e=>setCode(e.target.value.toUpperCase())} placeholder="ABCD" className="h-12 rounded-xl border border-input bg-background px-4 text-center text-xl font-black tracking-widest"/>
         <label className="text-sm font-semibold">Tu nombre o apodo</label><input required maxLength={24} value={nickname} onChange={e=>setNickname(e.target.value)} placeholder="¿Cómo te llamás?" className="h-12 rounded-xl border border-input bg-background px-4"/>
@@ -70,7 +75,7 @@ function JoinPage() {
           <div className="text-6xl">{state.current.emojis}</div>
           {state.current.clues.map((clue,i)=><p key={i} className="rounded-lg bg-secondary p-2 text-sm">💡 {clue}</p>)}
           {state.timer.enabled && <p className="text-highlight">¡Respondé antes de que termine el tiempo!</p>}
-          <form onSubmit={sendAnswer} className="flex flex-col gap-3"><input autoComplete="off" value={answer} onChange={e=>setAnswer(e.target.value)} placeholder="Tu respuesta…" className="h-12 rounded-xl border border-input bg-background px-4 text-center" required/><button disabled={busy} className="rounded-xl bg-primary px-5 py-3 font-bold text-primary-foreground">{busy ? "Enviando…" : "Enviar respuesta"}</button></form>
+          <form onSubmit={sendAnswer} className="flex flex-col gap-3"><input autoComplete="off" value={answer} onChange={e=>setAnswer(e.target.value)} placeholder={alreadySubmitted ? "Respuesta enviada" : "Tu respuesta…"} className="h-12 rounded-xl border border-input bg-background px-4 text-center" disabled={busy || alreadySubmitted} required/><button disabled={busy || alreadySubmitted} className="rounded-xl bg-primary px-5 py-3 font-bold text-primary-foreground">{busy ? "Enviando…" : alreadySubmitted ? "Respuesta enviada" : "Enviar respuesta"}</button></form>
         </> : <div className="rounded-xl bg-secondary p-5"><div className="text-4xl">⏳</div><p className="mt-2 font-bold">{state?.theatreJoinOpen ? "Esperando la próxima pregunta…" : "El animador está preparando la partida"}</p></div>}
         <button className="text-sm text-muted-foreground underline" onClick={()=>{localStorage.removeItem(PLAYER_KEY);setPlayer(null);}}>Salir / cambiar participante</button>
       </div>}
