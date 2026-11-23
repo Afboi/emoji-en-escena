@@ -45,6 +45,7 @@ export interface GameState {
   timer: TimerState;
   resumeTimer: boolean;
   updatedAt: number;
+  theatreJoinOpen?: boolean;
 }
 
 /** Lo único que recibe la pantalla pública: sin respuesta ni pistas ocultas. */
