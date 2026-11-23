@@ -265,7 +265,7 @@ function LiveTab({ state, update, now, offset, screenPath, screens }: { state: G
 function TeamsPanel({ state, update }: { state: GameState; update: Update }) {
   return (
     <Panel
-      title="Equipos y marcador"
+      title="Participantes y marcador"
       right={
         <Btn size="sm" variant={state.showScoreboard ? "highlight" : "ghost"} onClick={() => update((s) => ({ ...s, showScoreboard: !s.showScoreboard, scoreTitle: null }))}>
           {state.showScoreboard ? "Ocultar marcador público" : "Mostrar marcador público"}
@@ -286,12 +286,13 @@ function TeamsPanel({ state, update }: { state: GameState; update: Update }) {
             <div className="w-12 text-center font-display text-2xl font-black tabular-nums">{t.score}</div>
             <Btn size="sm" variant="success" onClick={() => update((s) => ({ ...s, teams: adjustScore(s.teams, t.id, 1) }))}>+1</Btn>
             <Btn size="sm" variant="success" onClick={() => update((s) => ({ ...s, teams: adjustScore(s.teams, t.id, 3) }))}>+3</Btn>
+            <Btn size="sm" variant="danger" onClick={() => update((s) => ({ ...s, teams: adjustScore(s.teams, t.id, -3) }))}>−3</Btn>
             <Btn size="sm" variant="danger" confirm={`¿Eliminar "${t.name}"?`} onClick={() => update((s) => ({ ...s, teams: s.teams.filter((x) => x.id !== t.id) }))}>✕</Btn>
           </div>
         ))}
-        {state.teams.length === 0 && <p className="text-sm text-muted-foreground">Sin equipos todavía.</p>}
+        {state.teams.length === 0 && <p className="text-sm text-muted-foreground">Sin participantes todavía.</p>}
         <div className="flex gap-2">
-          <Btn onClick={() => update((s) => ({ ...s, teams: [...s.teams, { id: uid(), name: `Equipo ${s.teams.length + 1}`, score: 0 }] }))}>+ Agregar equipo</Btn>
+          <Btn onClick={() => update((s) => ({ ...s, teams: [...s.teams, { id: uid(), name: `Participante ${s.teams.length + 1}`, score: 0 }] }))}>+ Agregar participante</Btn>
           <Btn confirm="¿Poner todos los puntajes en cero?" onClick={() => update((s) => ({ ...s, teams: s.teams.map((t) => ({ ...t, score: 0 })) }))}>Puntajes a cero</Btn>
         </div>
       </div>
@@ -437,10 +438,10 @@ function BankTab({ state, update, bank, setBank }: { state: GameState; update: U
         <Panel title={`Partida · ${state.playlist.length} preguntas`}>
           <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
             <label className="flex items-center gap-2">
-              Rondas
-              <input type="number" min={1} max={20} disabled={locked} value={state.rounds} onChange={(e) => update((s) => ({ ...s, rounds: Math.max(1, Math.min(20, Number(e.target.value) || 1)) }))} className={`${inputCls} w-20`} />
+              Preguntas por ronda
+              <input type="number" min={10} max={10} disabled={locked} value={state.rounds} onChange={(e) => update((s) => ({ ...s, rounds: 10 }))} className={`${inputCls} w-20`} />
             </label>
-            <span className="text-muted-foreground">hasta {roundInfo(0, state.playlist.length, state.rounds).per} preguntas por ronda</span>
+            <span className="text-muted-foreground">10 preguntas por ronda</span>
             <Btn size="sm" disabled={locked} onClick={() => update((s) => ({ ...s, playlist: [...s.playlist].sort(() => Math.random() - 0.5) }))}>Mezclar</Btn>
             <Btn size="sm" disabled={locked} onClick={() => update((s) => ({ ...s, playlist: bank }))}>Usar todo el banco</Btn>
             <Btn size="sm" variant="danger" disabled={locked} confirm="¿Quitar todas las preguntas de la partida?" onClick={() => update((s) => ({ ...s, playlist: [] }))}>Vaciar</Btn>
@@ -497,7 +498,7 @@ function BankTab({ state, update, bank, setBank }: { state: GameState; update: U
         </Panel>
 
         <Panel title="Modo de prueba">
-          <p className="mb-3 text-sm text-muted-foreground">Restablece esta sala con las 16 preguntas demo, 4 rondas y 3 equipos, lista para ensayar.</p>
+          <p className="mb-3 text-sm text-muted-foreground">Restablece la sala con preguntas de demostración y 10 preguntas por ronda.</p>
           <Btn
             variant="highlight"
             confirm="Se reemplaza la partida actual por datos de prueba. ¿Continuar?"
@@ -505,9 +506,9 @@ function BankTab({ state, update, bank, setBank }: { state: GameState; update: U
               update((s) => ({
                 ...newGame(s.room, SAMPLE_QUESTIONS),
                 title: s.title,
-                rounds: 4,
+                rounds: 10,
                 status: "ready",
-                teams: ["Coral", "Violeta", "Amarillo"].map((n) => ({ id: uid(), name: `Equipo ${n}`, score: 0 })),
+                teams: [],
               }))
             }
           >
