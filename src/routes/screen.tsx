@@ -30,7 +30,7 @@ function ScreenPage() {
   const { room } = Route.useSearch();
   const navigate = useNavigate();
   const [code, setCode] = useState("");
-  const { state, status, notFound, offset } = useScreenRoom(room ?? null);
+  const { state, status, notFound, readError, offset } = useScreenRoom(room ?? null);
   const now = useNow(200);
   const [hint, setHint] = useState(true);
   const hideRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -87,7 +87,7 @@ function ScreenPage() {
       </div>
       {status !== "online" && (
         <div className="fixed left-4 top-4 rounded-lg border border-border bg-card/80 px-3 py-2 text-xs font-semibold text-muted-foreground anim-pulse-soft">
-          {status === "connecting" ? "Conectando…" : "Reconectando…"}
+          {readError ? `Error de conexión: ${readError}` : status === "connecting" ? "Conectando…" : "Reconectando…"}
         </div>
       )}
       <button
