@@ -439,7 +439,7 @@ function BankTab({ state, update, bank, setBank }: { state: GameState; update: U
           <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
             <label className="flex items-center gap-2">
               Preguntas por ronda
-              <input type="number" min={10} max={10} disabled={locked} value={state.rounds} onChange={(e) => update((s) => ({ ...s, rounds: 10 }))} className={`${inputCls} w-20`} />
+              <span className="rounded-lg border border-border px-3 py-2 font-bold">10</span>
             </label>
             <span className="text-muted-foreground">10 preguntas por ronda</span>
             <Btn size="sm" disabled={locked} onClick={() => update((s) => ({ ...s, playlist: [...s.playlist].sort(() => Math.random() - 0.5) }))}>Mezclar</Btn>
