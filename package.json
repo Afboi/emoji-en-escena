@@ -15,7 +15,8 @@
   },
   "overrides": {
     "rolldown": "1.2.1",
-    "shell-quote": ">=1.11.0"
+    "shell-quote": ">=1.11.0",
+    "@netlify/otel": "7.0.8"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
