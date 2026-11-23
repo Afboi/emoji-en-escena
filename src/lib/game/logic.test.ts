@@ -25,7 +25,7 @@ describe("partida", () => {
     const s = { ...newGame("A", SAMPLE_QUESTIONS), cluesShown: 2, answerShown: true };
     const n = goTo(s, 1);
     expect([n.index, n.cluesShown, n.answerShown]).toEqual([1, 0, false]);
-    expect(goTo(s, 99).index).toBe(11);
+    expect(goTo(s, 99).index).toBe(35);
   });
   it("puntos y empates", () => {
     const g = newGame("A");
