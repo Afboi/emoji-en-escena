@@ -101,8 +101,8 @@ export const submitTheatreAnswer = createServerFn({ method: "POST" })
     if (playerError || !player) throw new Error("Participante no válido.");
     const { data: room, error } = await supabaseAdmin.from("room_secrets").select("private_state").eq("code", data.code).maybeSingle();
     if (error || !room || (player as unknown as { room_code: string }).room_code !== data.code) throw new Error("Sala no válida.");
-    const state = room.private_state as unknown as { theatreJoinOpen?: boolean; status?: string; index?: number; playlist?: { answer?: string }[]; timer?: { endsAt?: number | null; duration?: number } };
-    if (state.theatreJoinOpen !== true || state.status !== "playing" || !state.playlist?.[state.index ?? -1]) throw new Error("No hay una pregunta abierta.");
+    const state = room.private_state as unknown as { theatreMode?: boolean; answerShown?: boolean; status?: string; index?: number; playlist?: { answer?: string }[]; timer?: { enabled?: boolean; running?: boolean; endsAt?: number | null; duration?: number } };
+    if (state.theatreMode !== true || state.answerShown || state.status !== "playing" || !state.playlist?.[state.index ?? -1]) throw new Error("No hay una pregunta abierta.");
     const correct = normalizeAnswer(data.answer) === normalizeAnswer(state.playlist[state.index!].answer ?? "");
     const remaining = state.timer?.endsAt ? Math.max(0, state.timer.endsAt - Date.now()) : 0;
     if (state.timer?.enabled && state.timer.running && remaining <= 0) throw new Error("Se acabó el tiempo para responder.");
