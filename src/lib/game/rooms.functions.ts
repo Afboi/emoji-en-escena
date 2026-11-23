@@ -32,11 +32,15 @@ export const createRoom = createServerFn({ method: "POST" }).handler(async () =>
     const { error } = await supabaseAdmin.from("rooms").insert({ code, public_state: {} });
     if (error) {
       if (error.code === "23505") continue;
-      throw new Error("No se pudo crear la sala.");
+      console.error("[Emoji en Escena] Supabase rooms insert:", error.code, error.message);
+      throw new Error(`No se pudo crear la sala (${error.code ?? "Supabase"}): ${error.message}`);
     }
     const secret = crypto.randomUUID() + crypto.randomUUID();
     const { error: e2 } = await supabaseAdmin.from("room_secrets").insert({ code, secret_hash: await sha256(secret) });
-    if (e2) throw new Error("No se pudo crear la sala.");
+    if (e2) {
+      console.error("[Emoji en Escena] Supabase room_secrets insert:", e2.code, e2.message);
+      throw new Error(`La sala se creó, pero no se pudo guardar su acceso (${e2.code ?? "Supabase"}): ${e2.message}`);
+    }
     return { code, secret };
   }
   throw new Error("No se pudo generar un código libre.");
