@@ -122,10 +122,18 @@ function LiveTab({ state, update, now, offset, screenPath, screens, creds }: { s
   useEffect(() => {
     if (!creds || !CLOUD) return;
     let active = true;
-    const load = async () => { try { const result = await listTheatrePlayers({ data: creds }); if (active) setPlayers(result.players as unknown as { id: string; nickname: string; score: number }[]); } catch { /* se reintenta en el siguiente ciclo */ } };
+    const load = async () => { try { const result = await listTheatrePlayers({ data: creds }); if (active) {
+        const rows = result.players as unknown as { id: string; nickname: string; score: number }[];
+        setPlayers(rows);
+        if (state.theatreMode) update((s) => {
+          const teams = rows.map((p) => ({ id: p.id, name: p.nickname, score: p.score }));
+          if (s.teams.length === teams.length && s.teams.every((t, i) => t.id === teams[i]?.id && t.name === teams[i]?.name && t.score === teams[i]?.score)) return s;
+          return { ...s, teams };
+        });
+      } } catch { /* se reintenta en el siguiente ciclo */ } };
     void load(); const interval = setInterval(() => void load(), 2500);
     return () => { active = false; clearInterval(interval); };
-  }, [creds]);
+  }, [creds, state.theatreMode, update]);
   const q = state.playlist[state.index];
   const total = state.playlist.length;
   const info = roundInfo(state.index, total, state.rounds);
