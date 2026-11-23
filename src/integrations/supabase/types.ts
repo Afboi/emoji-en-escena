@@ -61,12 +61,24 @@ export type Database = {
         }
         Relationships: []
       }
+      theatre_players: {
+        Row: { id: string; room_code: string; nickname: string; score: number; joined_at: string }
+        Insert: { id: string; room_code: string; nickname: string; score?: number; joined_at?: string }
+        Update: { id?: string; room_code?: string; nickname?: string; score?: number; joined_at?: string }
+        Relationships: []
+      }
+      theatre_answers: {
+        Row: { player_id: string; question_index: number; answer: string; correct: boolean; points: number; submitted_at: string }
+        Insert: { player_id: string; question_index: number; answer: string; correct?: boolean; points?: number; submitted_at?: string }
+        Update: { player_id?: string; question_index?: number; answer?: string; correct?: boolean; points?: number; submitted_at?: string }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      record_theatre_answer: { Args: { p_player_id: string; p_question_index: number; p_answer: string; p_correct: boolean; p_points: number }; Returns: { accepted: boolean; awarded: number }[] }
     }
     Enums: {
       [_ in never]: never
