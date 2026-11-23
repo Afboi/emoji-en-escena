@@ -191,8 +191,24 @@ function LiveTab({ state, update, now, offset, screenPath, screens, creds }: { s
           </div>
           <div className="mt-3 rounded-lg bg-secondary/60 p-3 text-sm">
             <p className="font-bold">Código para el público: <span className="font-display tracking-widest text-highlight">{state.room}</span></p>
-            <p className="mt-1 text-muted-foreground">Cuando el ingreso esté abierto, los participantes pueden entrar en la página <span className="font-mono">/join</span> desde sus celulares e introducir este código.</p>
-            <p className="mt-2 text-xs text-muted-foreground">Para celulares, la aplicación debe estar publicada en una dirección web accesible desde la red del evento; localhost solo funciona en esta computadora.</p>
+            <p className="mt-1 text-muted-foreground">Escaneá este QR para abrir el ingreso desde el celular:</p>
+            <div className="mt-3 flex flex-wrap items-center gap-4">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(typeof window !== "undefined" ? `${window.location.origin}/join?room=${state.room}` : `/join?room=${state.room}`)}`}
+                alt="Código QR para ingresar a la sala"
+                width={176}
+                height={176}
+                className="rounded-xl bg-white p-2"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="break-all font-mono text-xs">{typeof window !== "undefined" ? `${window.location.origin}/join?room=${state.room}` : `/join?room=${state.room}`}</p>
+                <Btn size="sm" className="mt-2" onClick={() => void navigator.clipboard.writeText(`${window.location.origin}/join?room=${state.room}`)}>Copiar enlace de ingreso</Btn>
+              </div>
+            </div>
+            {typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname) && (
+              <p className="mt-3 text-xs font-semibold text-highlight">Estás usando localhost: el QR sirve en esta computadora, pero los celulares necesitan que la aplicación esté publicada en internet o en una dirección de red accesible.</p>
+            )}
+            <p className="mt-2 text-xs text-muted-foreground">El ingreso solo se acepta mientras el animador tenga abierta la entrada.</p>
           </div>
         </Panel>
 
