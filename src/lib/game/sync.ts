@@ -209,6 +209,7 @@ export function useControlRoom() {
   const localScreen = Date.now() - lastSeen < 3500 ? 1 : 0;
   return {
     state,
+    creds,
     update,
     status,
     error,
