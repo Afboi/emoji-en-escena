@@ -101,6 +101,13 @@ export function useControlRoom() {
         const raw = localStorage.getItem(CREDS_KEY);
         c = raw ? (JSON.parse(raw) as Creds) : null;
       }
+      // A room created before Supabase was configured used the local-only
+      // secret "local". It cannot authenticate against the cloud server.
+      // Discard that stale credential and provision a real cloud room.
+      if (CLOUD && c && c.secret.length < 20) {
+        localStorage.removeItem(CREDS_KEY);
+        c = null;
+      }
       if (!c) {
         c = CLOUD ? await createRoom() : { code: makeRoomCode(), secret: "local" };
         localStorage.setItem(CREDS_KEY, JSON.stringify(c));
