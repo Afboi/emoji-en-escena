@@ -232,6 +232,7 @@ export function useScreenRoom(code: string | null) {
   const [state, setState] = useState<PublicState | null>(null);
   const [status, setStatus] = useState<ConnStatus>("connecting");
   const [notFound, setNotFound] = useState(false);
+  const [readError, setReadError] = useState<string | null>(null);
   const offset = useServerOffset();
 
   useEffect(() => {
@@ -240,21 +241,33 @@ export function useScreenRoom(code: string | null) {
     if (CLOUD) {
       let alive = true;
       const fetchNow = async () => {
-        const { data, error } = await supabase.from("rooms").select("public_state").eq("code", code).maybeSingle();
-        if (!alive) return;
-        if (error) {
+        try {
+          const { data, error } = await supabase.from("rooms").select("public_state").eq("code", code).maybeSingle();
+          if (!alive) return;
+          if (error) {
+            console.error("[Emoji en Escena] Screen room read:", error.code, error.message, error.details);
+            setReadError(`${error.code ?? "Supabase"}: ${error.message}`);
+            setStatus("offline");
+            return;
+          }
+          if (!data) {
+            setNotFound(true);
+            setReadError("La consulta respondió correctamente, pero no encontró la sala.");
+            setStatus("online");
+            return;
+          }
+          setNotFound(false);
+          setReadError(null);
+          const ps = data.public_state as unknown as PublicState;
+          setState(ps && "room" in ps ? ps : null);
+          setStatus("online");
+        } catch (e) {
+          if (!alive) return;
+          const message = e instanceof Error ? e.message : String(e);
+          console.error("[Emoji en Escena] Screen room fetch failed:", e);
+          setReadError(message);
           setStatus("offline");
-          return;
         }
-        if (!data) {
-          setNotFound(true);
-          return;
-        }
-        setNotFound(false);
-        const ps = data.public_state as unknown as PublicState;
-        setState(ps && "room" in ps ? ps : null);
-        // Keep the projector updated even if realtime websocket is unavailable.
-        setStatus("online");
       };
       void fetchNow();
       // Poll the public state as a fallback if realtime cannot connect.
@@ -298,5 +311,5 @@ export function useScreenRoom(code: string | null) {
     };
   }, [code]);
 
-  return { state, status, notFound, offset };
+  return { state, status, notFound, readError, offset };
 }
