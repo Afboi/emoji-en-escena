@@ -55,6 +55,7 @@ export function newGame(room: string, playlist: Question[] = []): GameState {
     timer: { enabled: true, duration: 45, running: false, endsAt: null, remainingMs: 45000 },
     resumeTimer: false,
     updatedAt: Date.now(),
+    theatreJoinOpen: false,
   };
 }
 
@@ -151,5 +152,6 @@ export function toPublic(s: GameState, offset: number): PublicState {
     teams: s.teams,
     timer: { ...s.timer, endsAt: s.timer.endsAt === null ? null : s.timer.endsAt + offset },
     updatedAt: s.updatedAt,
+    theatreJoinOpen: s.theatreJoinOpen === true,
   };
 }
