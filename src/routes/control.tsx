@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { listTheatrePlayers } from "@/lib/game/rooms.functions";
 import { Btn, Panel, inputCls } from "@/components/game/Btn";
 import { Stage, TEAM_BG } from "@/components/game/Stage";
 import {
@@ -108,7 +109,7 @@ function ControlPage() {
       </nav>
 
       {tab === "live" ? (
-        <LiveTab state={state} update={update} now={now} offset={offset} screenPath={screenPath} screens={screens} />
+        <LiveTab state={state} update={update} now={now} offset={offset} screenPath={screenPath} screens={screens} creds={room.creds} />
       ) : (
         <BankTab state={state} update={update} bank={bank} setBank={setBank} />
       )}
@@ -116,7 +117,7 @@ function ControlPage() {
   );
 }
 
-function LiveTab({ state, update, now, offset, screenPath, screens }: { state: GameState; update: Update; now: number; offset: number; screenPath: string; screens: number }) {
+function LiveTab({ state, update, now, offset, screenPath, screens, creds }: { state: GameState; update: Update; now: number; offset: number; screenPath: string; screens: number; creds: { code: string; secret: string } | null }) {\n  const [players, setPlayers] = useState<{ id: string; nickname: string; score: number }[]>([]);\n  useEffect(() => {\n    if (!creds || !CLOUD) return;\n    let active = true;\n    const load = async () => { try { const result = await listTheatrePlayers({ data: creds }); if (active) setPlayers(result.players as unknown as { id: string; nickname: string; score: number }[]); } catch { /* se reintenta en el siguiente ciclo */ } };\n    void load(); const interval = setInterval(() => void load(), 2500);\n    return () => { active = false; clearInterval(interval); };\n  }, [creds]);
   const q = state.playlist[state.index];
   const total = state.playlist.length;
   const info = roundInfo(state.index, total, state.rounds);
