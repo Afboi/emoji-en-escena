@@ -30,7 +30,7 @@ function Scoreboard({ state, title }: { state: PublicState; title: string }) {
     <div className="flex h-full flex-col justify-center gap-[2cqw] px-[10cqw]">
       <p className="font-display text-[1.6cqw] font-bold tracking-[0.3em] text-muted-foreground">{state.title.toUpperCase()}</p>
       <h2 className="font-display text-[4.5cqw] font-black text-show-gradient anim-rise">{title}</h2>
-      {sorted.length === 0 && <p className="text-[2cqw] text-muted-foreground">Sin equipos</p>}
+      {sorted.length === 0 && <p className="text-[2cqw] text-muted-foreground">Sin participantes</p>}
       {sorted.map((t, i) => {
         const idx = state.teams.findIndex((x) => x.id === t.id) % 4;
         return (
@@ -99,7 +99,7 @@ function StageInner({ state, now, waiting }: { state: PublicState | null; now: n
         <p className={`font-display text-[2.8cqw] font-bold ${ready ? "text-highlight anim-pulse-soft" : "text-muted-foreground"}`}>¡Prepárense para adivinar!</p>
         {ready && state.total > 0 && (
           <p className="text-[1.9cqw] text-muted-foreground">
-            {state.totalRounds} {state.totalRounds === 1 ? "ronda" : "rondas"} · {state.total} preguntas · {state.teams.length} equipos
+            {state.totalRounds} {state.totalRounds === 1 ? "ronda" : "rondas"} · {state.total} preguntas · {state.teams.length} participantes
           </p>
         )}
         <p className="mt-[1.5cqw] rounded-full border border-border px-[2cqw] py-[0.6cqw] font-display text-[1.6cqw] tracking-[0.3em] text-muted-foreground">SALA {state.room}</p>
