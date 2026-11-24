@@ -82,8 +82,22 @@ function ScreenPage() {
       }}
       onDoubleClick={toggleFullscreen}
     >
-      <div className="w-[min(100vw,177.78vh)]">
+      <div className="relative w-[min(100vw,177.78vh)]">
         <Stage state={state} now={now + offset} waiting={notFound ? `No existe la sala ${room}. Revisá el código.` : undefined} />
+        {state?.theatreMode && state.theatreJoinOpen && (
+          <div className="absolute right-4 top-4 z-20 flex max-w-[42%] items-center gap-3 rounded-2xl border border-highlight/60 bg-[#101426]/95 p-3 shadow-2xl sm:right-8 sm:top-8 sm:gap-5 sm:p-5">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=6&data=${encodeURIComponent(`${window.location.origin}/join?room=${room}`)}`}
+              alt="QR para unirse al juego"
+              className="h-20 w-20 rounded-lg bg-white p-1 sm:h-32 sm:w-32"
+            />
+            <div className="min-w-0 text-left">
+              <p className="font-display text-sm font-black text-highlight sm:text-2xl">¡Entrá a jugar!</p>
+              <p className="mt-1 text-xs text-white/80 sm:text-base">Escaneá el QR con tu celular</p>
+              <p className="mt-2 font-display text-lg font-black tracking-[0.2em] text-white sm:text-3xl">{room}</p>
+            </div>
+          </div>
+        )}
       </div>
       {status !== "online" && (
         <div className="fixed left-4 top-4 rounded-lg border border-border bg-card/80 px-3 py-2 text-xs font-semibold text-muted-foreground anim-pulse-soft">
