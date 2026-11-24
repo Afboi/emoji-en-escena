@@ -85,16 +85,19 @@ function ScreenPage() {
       <div className="relative w-[min(100vw,177.78vh)]">
         <Stage state={state} now={now + offset} waiting={notFound ? `No existe la sala ${room}. Revisá el código.` : undefined} />
         {state?.theatreMode && state.theatreJoinOpen && (
-          <div className="absolute right-4 top-4 z-20 flex max-w-[42%] items-center gap-3 rounded-2xl border border-highlight/60 bg-[#101426]/95 p-3 shadow-2xl sm:right-8 sm:top-8 sm:gap-5 sm:p-5">
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=6&data=${encodeURIComponent(`${window.location.origin}/join?room=${room}`)}`}
-              alt="QR para unirse al juego"
-              className="h-20 w-20 rounded-lg bg-white p-1 sm:h-32 sm:w-32"
-            />
-            <div className="min-w-0 text-left">
-              <p className="font-display text-sm font-black text-highlight sm:text-2xl">¡Entrá a jugar!</p>
-              <p className="mt-1 text-xs text-white/80 sm:text-base">Escaneá el QR con tu celular</p>
-              <p className="mt-2 font-display text-lg font-black tracking-[0.2em] text-white sm:text-3xl">{room}</p>
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#080817]/75 p-5 sm:p-10">
+            <div className="flex w-full max-w-5xl flex-col items-center gap-6 rounded-3xl border-2 border-highlight/70 bg-[#111426]/95 px-6 py-8 text-center shadow-2xl sm:flex-row sm:gap-10 sm:px-12 sm:py-10">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=700x700&margin=8&data=${encodeURIComponent(`${window.location.origin}/join?room=${room}`)}`}
+                alt="QR grande para unirse al juego"
+                className="h-[min(52vh,62vw)] w-[min(52vh,62vw)] max-h-[560px] max-w-[560px] rounded-2xl bg-white p-3"
+              />
+              <div className="flex min-w-0 flex-col items-center text-center sm:items-start sm:text-left">
+                <p className="font-display text-3xl font-black text-highlight sm:text-5xl">¡Entrá a jugar!</p>
+                <p className="mt-3 text-xl text-white/90 sm:text-3xl">Escaneá este QR con tu celular</p>
+                <p className="mt-5 rounded-xl border border-white/20 px-6 py-3 font-display text-3xl font-black tracking-[0.25em] text-white sm:text-5xl">{room}</p>
+                <p className="mt-4 text-base text-white/70 sm:text-xl">¡Sumate y preparate para adivinar!</p>
+              </div>
             </div>
           </div>
         )}
