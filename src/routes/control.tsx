@@ -33,7 +33,28 @@ function ControlPage() {
   const { state, update, status, error, screens, offset } = room;
   const [bank, setBank] = useBank();
   const now = useNow(250);
-  const [tab, setTab] = useState<"live" | "bank">("live");
+  const [tab, setTab] = useState<"live" | "bank" | "theatre">("live");
+  const [players, setPlayers] = useState<{ id: string; nickname: string; score: number }[]>([]);
+  useEffect(() => {
+    if (!room.creds || !CLOUD) return;
+    let active = true;
+    const load = async () => {
+      try {
+        const result = await listTheatrePlayers({ data: room.creds! });
+        if (!active) return;
+        const rows = result.players as unknown as { id: string; nickname: string; score: number }[];
+        setPlayers(rows);
+        if (state?.theatreMode) update((s) => {
+          const teams = rows.map((p) => ({ id: p.id, name: p.nickname, score: p.score }));
+          if (s.teams.length === teams.length && s.teams.every((t, i) => t.id === teams[i]?.id && t.name === teams[i]?.name && t.score === teams[i]?.score)) return s;
+          return { ...s, teams };
+        });
+      } catch { /* se reintenta */ }
+    };
+    void load();
+    const interval = setInterval(() => void load(), 2500);
+    return () => { active = false; clearInterval(interval); };
+  }, [room.creds, state?.theatreMode, update]);
 
   if (status === "error" && !state) {
     return (
@@ -97,43 +118,29 @@ function ControlPage() {
       )}
 
       <nav className="flex gap-2 px-5 pt-4">
-        {(["live", "bank"] as const).map((t) => (
+        {(["live", "bank", "theatre"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`rounded-lg px-4 py-2 text-sm font-bold ${tab === t ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"}`}
           >
-            {t === "live" ? "En vivo" : `Banco y configuración (${bank.length})`}
+            {t === "live" ? "En vivo" : t === "bank" ? `Banco y configuración (${bank.length})` : "Teatro interactivo"}
           </button>
         ))}
       </nav>
 
       {tab === "live" ? (
-        <LiveTab state={state} update={update} now={now} offset={offset} screenPath={screenPath} screens={screens} creds={room.creds} />
-      ) : (
+        <LiveTab state={state} update={update} now={now} offset={offset} screenPath={screenPath} screens={screens} />
+      ) : tab === "bank" ? (
         <BankTab state={state} update={update} bank={bank} setBank={setBank} />
+      ) : (
+        <TheatreTab state={state} update={update} players={players} />
       )}
     </div>
   );
 }
 
-function LiveTab({ state, update, now, offset, screenPath, screens, creds }: { state: GameState; update: Update; now: number; offset: number; screenPath: string; screens: number; creds: { code: string; secret: string } | null }) {
-  const [players, setPlayers] = useState<{ id: string; nickname: string; score: number }[]>([]);
-  useEffect(() => {
-    if (!creds || !CLOUD) return;
-    let active = true;
-    const load = async () => { try { const result = await listTheatrePlayers({ data: creds }); if (active) {
-        const rows = result.players as unknown as { id: string; nickname: string; score: number }[];
-        setPlayers(rows);
-        if (state.theatreMode) update((s) => {
-          const teams = rows.map((p) => ({ id: p.id, name: p.nickname, score: p.score }));
-          if (s.teams.length === teams.length && s.teams.every((t, i) => t.id === teams[i]?.id && t.name === teams[i]?.name && t.score === teams[i]?.score)) return s;
-          return { ...s, teams };
-        });
-      } } catch { /* se reintenta en el siguiente ciclo */ } };
-    void load(); const interval = setInterval(() => void load(), 2500);
-    return () => { active = false; clearInterval(interval); };
-  }, [creds, state.theatreMode, update]);
+function LiveTab({ state, update, now, offset, screenPath, screens }: { state: GameState; update: Update; now: number; offset: number; screenPath: string; screens: number }) {
   const q = state.playlist[state.index];
   const total = state.playlist.length;
   const info = roundInfo(state.index, total, state.rounds);
@@ -177,39 +184,6 @@ function LiveTab({ state, update, now, offset, screenPath, screens, creds }: { s
           </div>
           {total === 0 && <p className="mt-3 text-sm text-destructive">No hay preguntas en la partida. Agregalas en «Banco y configuración».</p>}
           {total > 0 && <p className="mt-3 text-xs text-muted-foreground">{total} preguntas · {Math.ceil(total / info.per)} rondas de hasta {info.per}</p>}
-        </Panel>
-
-        <Panel title="Modo teatro interactivo" right={<span className={state.theatreMode ? "text-success text-xs font-bold" : "text-muted-foreground text-xs"}>{state.theatreMode ? "ACTIVO" : "DESACTIVADO"}</span>}>
-          <div className="flex flex-wrap gap-2">
-            <Btn variant={state.theatreMode ? "danger" : "highlight"} onClick={() => update((s) => ({ ...s, theatreMode: !s.theatreMode, theatreJoinOpen: s.theatreMode ? false : s.theatreJoinOpen }))}>
-              {state.theatreMode ? "Desactivar modo teatro" : "Activar modo teatro"}
-            </Btn>
-            <Btn disabled={!state.theatreMode} variant={state.theatreJoinOpen ? "danger" : "primary"} onClick={() => update((s) => ({ ...s, theatreJoinOpen: !s.theatreJoinOpen }))}>
-              {state.theatreJoinOpen ? "🔒 Cerrar ingreso" : "📱 Abrir ingreso"}
-            </Btn>
-            <Btn disabled={!state.theatreMode} onClick={() => window.open(`/join?room=${state.room}`, "_blank")}>Vista de ingreso ↗</Btn>
-          </div>
-          <div className="mt-3 rounded-lg bg-secondary/60 p-3 text-sm">
-            <p className="font-bold">Código para el público: <span className="font-display tracking-widest text-highlight">{state.room}</span></p>
-            <p className="mt-1 text-muted-foreground">Escaneá este QR para abrir el ingreso desde el celular:</p>
-            <div className="mt-3 flex flex-wrap items-center gap-4">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(typeof window !== "undefined" ? `${window.location.origin}/join?room=${state.room}` : `/join?room=${state.room}`)}`}
-                alt="Código QR para ingresar a la sala"
-                width={176}
-                height={176}
-                className="rounded-xl bg-white p-2"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="break-all font-mono text-xs">{typeof window !== "undefined" ? `${window.location.origin}/join?room=${state.room}` : `/join?room=${state.room}`}</p>
-                <Btn size="sm" className="mt-2" onClick={() => void navigator.clipboard.writeText(`${window.location.origin}/join?room=${state.room}`)}>Copiar enlace de ingreso</Btn>
-              </div>
-            </div>
-            {typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname) && (
-              <p className="mt-3 text-xs font-semibold text-highlight">Estás usando localhost: el QR sirve en esta computadora, pero los celulares necesitan que la aplicación esté publicada en internet o en una dirección de red accesible.</p>
-            )}
-            <p className="mt-2 text-xs text-muted-foreground">El ingreso solo se acepta mientras el animador tenga abierta la entrada.</p>
-          </div>
         </Panel>
 
         <Panel
@@ -308,6 +282,62 @@ function LiveTab({ state, update, now, offset, screenPath, screens, creds }: { s
         </Panel>
         <TeamsPanel state={state} update={update} />
       </div>
+    </div>
+  );
+}
+
+function TheatreTab({ state, update, players }: { state: GameState; update: Update; players: { id: string; nickname: string; score: number }[] }) {
+  return (
+    <div className="grid gap-4 p-5 xl:grid-cols-[1fr_1fr]">
+        <Panel title="Modo teatro interactivo" right={<span className={state.theatreMode ? "text-success text-xs font-bold" : "text-muted-foreground text-xs"}>{state.theatreMode ? "ACTIVO" : "DESACTIVADO"}</span>}>
+          <div className="flex flex-wrap gap-2">
+            <Btn variant={state.theatreMode ? "danger" : "highlight"} onClick={() => update((s) => ({ ...s, theatreMode: !s.theatreMode, theatreJoinOpen: s.theatreMode ? false : s.theatreJoinOpen }))}>
+              {state.theatreMode ? "Desactivar modo teatro" : "Activar modo teatro"}
+            </Btn>
+            <Btn disabled={!state.theatreMode} variant={state.theatreJoinOpen ? "danger" : "primary"} onClick={() => update((s) => ({ ...s, theatreJoinOpen: !s.theatreJoinOpen }))}>
+              {state.theatreJoinOpen ? "🔒 Cerrar ingreso" : "📱 Abrir ingreso"}
+            </Btn>
+            <Btn disabled={!state.theatreMode} onClick={() => window.open(`/join?room=${state.room}`, "_blank")}>Vista de ingreso ↗</Btn>
+          </div>
+          <div className="mt-3 rounded-lg bg-secondary/60 p-3 text-sm">
+            <p className="font-bold">Código para el público: <span className="font-display tracking-widest text-highlight">{state.room}</span></p>
+            <p className="mt-1 text-muted-foreground">Escaneá este QR para abrir el ingreso desde el celular:</p>
+            <div className="mt-3 flex flex-wrap items-center gap-4">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=${encodeURIComponent(typeof window !== "undefined" ? `${window.location.origin}/join?room=${state.room}` : `/join?room=${state.room}`)}`}
+                alt="Código QR para ingresar a la sala"
+                width={176}
+                height={176}
+                className="rounded-xl bg-white p-2"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="break-all font-mono text-xs">{typeof window !== "undefined" ? `${window.location.origin}/join?room=${state.room}` : `/join?room=${state.room}`}</p>
+                <Btn size="sm" className="mt-2" onClick={() => void navigator.clipboard.writeText(`${window.location.origin}/join?room=${state.room}`)}>Copiar enlace de ingreso</Btn>
+              </div>
+            </div>
+            {typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname) && (
+              <p className="mt-3 text-xs font-semibold text-highlight">Estás usando localhost: el QR sirve en esta computadora, pero los celulares necesitan que la aplicación esté publicada en internet o en una dirección de red accesible.</p>
+            )}
+            <p className="mt-2 text-xs text-muted-foreground">El ingreso solo se acepta mientras el animador tenga abierta la entrada.</p>
+          </div>
+        </Panel>
+      <Panel title="Participantes conectados" right={<span className="text-xs text-muted-foreground">{players.length} en sala</span>}>
+        {players.length === 0 ? <p className="text-sm text-muted-foreground">Aún no hay participantes. Abrí el ingreso y compartí el QR.</p> : (
+          <div className="flex flex-col gap-2">
+            {[...players].sort((a,b)=>b.score-a.score).map((p,i)=><div key={p.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2">
+              <span className="font-semibold">{i+1}. {p.nickname}</span><span className="font-display font-black text-highlight">{p.score} pts</span>
+            </div>)}
+          </div>
+        )}
+      </Panel>
+      <Panel title="Cómo funciona">
+        <ol className="list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
+          <li>Activá el modo teatro interactivo.</li>
+          <li>Abrí el ingreso para que el público pueda escanear el QR.</li>
+          <li>Iniciá la partida desde la pestaña En vivo.</li>
+          <li>Al terminar, cada participante verá el ganador y el ranking en su celular.</li>
+        </ol>
+      </Panel>
     </div>
   );
 }
