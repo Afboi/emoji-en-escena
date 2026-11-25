@@ -70,7 +70,7 @@ function JoinPage() {
         <button disabled={busy} className="mt-2 rounded-xl bg-primary px-5 py-3 font-bold text-primary-foreground">{busy ? "Ingresando…" : "Entrar a jugar"}</button>
       </form> : <div className="flex flex-col gap-4 text-center">
         <p className="rounded-xl bg-secondary p-3 font-bold">¡Hola, {player.nickname}! · Sala {player.room}</p>
-        {state?.status === "finished" ? (() => {
+        {state?.showScoreboard ? <div className="anim-rise flex flex-col items-center gap-3 rounded-2xl border border-highlight/40 bg-gradient-to-b from-highlight/10 to-secondary p-5 text-center"><div className="text-5xl anim-float">🎉</div><p className="text-xs font-bold uppercase tracking-[0.18em] text-highlight">Ronda {state.round} completada</p><h2 className="font-display text-2xl font-black text-show-gradient">¡Buen trabajo!</h2><p className="text-sm leading-relaxed text-muted-foreground">Prepárate para la siguiente ronda. Esperá a que el animador indique cuándo vamos a continuar.</p><div className="mt-1 rounded-full bg-background/70 px-4 py-2 text-xs font-semibold">⏳ En pausa entre rondas</div></div> : state?.status === "finished" ? (() => {
           const ranked = [...(state.teams ?? [])].sort((a, b) => b.score - a.score);
           const topScore = ranked[0]?.score;
           const winners = ranked.filter((t) => t.score === topScore);
@@ -87,13 +87,13 @@ function JoinPage() {
             </div>
             <p className="text-sm text-muted-foreground">¡Gracias por ser parte de Emoji en Escena! 🎬</p>
           </div>;
-        })() : state?.status === "playing" && state.current && !state.answerShown ? <>
+        })() : state?.status === "playing" && state.current && !state.answerShown ? <div className="anim-rise flex flex-col gap-4">
           <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Pregunta {state.index + 1}</div>
           <div className="text-6xl">{state.current.emojis}</div>
           {state.current.clues.map((clue,i)=><p key={i} className="rounded-lg bg-secondary p-2 text-sm">💡 {clue}</p>)}
           {state.timer.enabled && <p className="text-highlight">¡Respondé antes de que termine el tiempo!</p>}
           {alreadySubmitted ? <div className="flex flex-col items-center gap-2 rounded-xl border border-success/30 bg-success/10 p-4"><div className="text-3xl">✅</div><p className="font-bold">¡Respuesta enviada!</p><p className="text-sm text-muted-foreground">Tu respuesta quedó registrada. Esperá la siguiente pregunta.</p></div> : <form onSubmit={sendAnswer} className="flex flex-col gap-3"><input autoComplete="off" value={answer} onChange={e=>setAnswer(e.target.value)} placeholder="Tu respuesta…" className="h-12 rounded-xl border border-input bg-background px-4 text-center" disabled={busy} required/><button disabled={busy} className="rounded-xl bg-primary px-5 py-3 font-bold text-primary-foreground">{busy ? "Enviando…" : "Enviar respuesta"}</button></form>}
-        </> : <div className="rounded-xl bg-secondary p-5"><div className="text-4xl">⏳</div><p className="mt-2 font-bold">{state?.theatreJoinOpen ? "Esperando la próxima pregunta…" : "El animador está preparando la partida"}</p></div>}
+        </div> : <div className="anim-rise rounded-xl bg-secondary p-5"><div className="text-4xl">⏳</div><p className="mt-2 font-bold">{state?.theatreJoinOpen ? "Esperando la próxima pregunta…" : "El animador está preparando la partida"}</p></div>}
         <button className="text-sm text-muted-foreground underline" onClick={()=>{localStorage.removeItem(PLAYER_KEY);setPlayer(null);}}>Salir / cambiar participante</button>
       </div>}
       {message && <p role="status" className="mt-4 rounded-xl bg-secondary p-3 text-center text-sm font-semibold">{message}</p>}
