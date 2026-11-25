@@ -429,7 +429,7 @@ function TeamsPanel({ state, update }: { state: GameState; update: Update }) {
   );
 }
 
-const EMPTY: Question = { id: "", emojis: "", answer: "", category: "", difficulty: "media", kind: "película", clues: [], solution: "", notes: "" };
+const EMPTY: Question = { id: "", emojis: "", answer: "", acceptedAnswers: [], category: "", difficulty: "media", kind: "película", clues: [], solution: "", notes: "" };
 
 function BankTab({ state, update, bank, setBank }: { state: GameState; update: Update; bank: Question[]; setBank: (b: Question[]) => void }) {
   const [editing, setEditing] = useState<Question | null>(null);
@@ -663,6 +663,11 @@ function Editor({ initial, categories, onSave, onCancel }: { initial: Question; 
         <label className="text-sm">
           Respuesta exacta
           <input value={q.answer} onChange={(e) => setQ({ ...q, answer: e.target.value })} className={inputCls} />
+        </label>
+        <label className="text-sm sm:col-span-2">
+          También aceptar (ES / EN)
+          <input value={(q.acceptedAnswers ?? []).join(", ")} onChange={(e) => setQ({ ...q, acceptedAnswers: e.target.value.split(",").map((v) => v.trim()).filter(Boolean) })} className={inputCls} placeholder="The Lion King, Lion King" />
+          <span className="mt-1 block text-xs text-muted-foreground">Separá las variantes con comas. Coincidencia exacta: 3 puntos; pequeño error: 1 punto.</span>
         </label>
         <label className="text-sm">
           Categoría
