@@ -5,6 +5,7 @@ export interface Question {
   id: string;
   emojis: string;
   answer: string;
+  acceptedAnswers?: string[];
   category: string;
   difficulty: Difficulty;
   kind: Kind;
