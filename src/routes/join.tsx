@@ -55,7 +55,7 @@ function JoinPage() {
     try {
       const result = await submitTheatreAnswer({ data: { code: player.room, playerId: player.playerId, answer: answer.trim() } });
       setSubmittedIndex(questionIndex);
-      setMessage(result.accepted ? (result.correct ? `¡Correcto! +${result.points} ${result.points === 1 ? "punto" : "puntos"}` : "Respuesta registrada. ¡Suerte en la próxima!") : "Ya habías respondido esta pregunta.");
+      setMessage(result.accepted ? (result.correct && result.points === 3 ? "¡Respuesta brillante! 🎉 +3 puntos" : result.correct && result.points === 1 ? "¡La tenías! ✍️ Un pequeño detalle de escritura: +1 punto" : "Respuesta registrada. ¡La próxima puede ser la tuya! 🍀") : "Esta pregunta ya quedó respondida.");
       setAnswer("");
     } catch (err) { setMessage(err instanceof Error ? err.message : "No se pudo enviar."); }
     finally { setBusy(false); }
