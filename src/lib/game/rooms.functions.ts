@@ -118,7 +118,7 @@ function gradeAnswer(input: string, expected: string, aliases: string[] = []): {
   const normalized = candidates.map(normalizeAnswer);
   if (normalized.some((answer) => typed === answer)) return { isCorrect: true, points: 1 };
   if (normalized.some((answer) => {
-    const withoutArticle = answer.replace(/^(el|la|los|las|un|una|the|a|an)\\s+/, "");
+    const withoutArticle = answer.replace(/^(el|la|los|las|un|una|the|a|an)\s+/, "");
     if (typed === withoutArticle || (typed.length >= 5 && editDistance(typed, answer) === 1)) return true;
 
     // Tolerate a small typo in each word of bilingual titles.
