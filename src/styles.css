@@ -163,11 +163,11 @@
   }
 }
 /* Animaciones breves y accesibles para escenario y móviles */
-@utility anim-stage-glow { animation: stage-glow 14s ease-in-out infinite alternate; }
-@utility anim-emoji-enter { animation: emoji-enter 620ms cubic-bezier(.18,.82,.24,1.15) both; }
-@utility anim-clue-enter { animation: clue-enter 420ms cubic-bezier(.2,.7,.2,1) both; }
-@utility anim-score-enter { animation: score-enter 520ms cubic-bezier(.2,.7,.2,1) both; }
-@utility anim-answer-pop { animation: answer-pop 480ms cubic-bezier(.18,.85,.25,1.18) both; }
+@utility anim-stage-glow { animation: stage-glow 6s ease-in-out infinite alternate; }
+@utility anim-emoji-enter { animation: emoji-enter 850ms cubic-bezier(.18,.82,.24,1.15) both; }
+@utility anim-clue-enter { animation: clue-enter 520ms cubic-bezier(.2,.7,.2,1) both; }
+@utility anim-score-enter { animation: score-enter 650ms cubic-bezier(.2,.7,.2,1) both; }
+@utility anim-answer-pop { animation: answer-pop 650ms cubic-bezier(.18,.85,.25,1.18) both; }
 @utility anim-timer-urgent { animation: timer-urgent 1.15s ease-in-out infinite; }
 @keyframes stage-glow { 0% { background-position: 0% 0%, 100% 100%; } 100% { background-position: 18% 10%, 82% 90%; } }
 @keyframes emoji-enter { 0% { opacity: 0; transform: translateY(16px) scale(.84); filter: blur(5px); } 65% { opacity: 1; transform: translateY(-2px) scale(1.025); filter: blur(0); } 100% { transform: translateY(0) scale(1); } }
@@ -175,4 +175,13 @@
 @keyframes score-enter { from { opacity: 0; transform: translateX(-16px) scale(.98); } to { opacity: 1; transform: translateX(0) scale(1); } }
 @keyframes answer-pop { 0% { opacity: 0; transform: scale(.88) translateY(8px); } 70% { opacity: 1; transform: scale(1.025) translateY(0); } 100% { transform: scale(1); } }
 @keyframes timer-urgent { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+
+@utility anim-emoji-loop { animation: emoji-loop 3.2s ease-in-out 900ms infinite; transform-origin: 50% 75%; }
+@utility anim-clue-loop { animation: clue-loop 4.8s ease-in-out 700ms infinite; }
+@utility anim-answer-glow { animation: answer-glow 2.8s ease-in-out infinite; }
+@utility anim-stage-accent { animation: stage-accent 5s ease-in-out infinite alternate; }
+@keyframes emoji-loop { 0%, 100% { transform: translateY(0) rotate(0) scale(1); } 35% { transform: translateY(-1.2cqw) rotate(-1.2deg) scale(1.035); } 68% { transform: translateY(.25cqw) rotate(1deg) scale(1.015); } }
+@keyframes clue-loop { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent) 0%, transparent); } 50% { box-shadow: 0 0 1.2cqw .15cqw color-mix(in oklab, var(--accent) 18%, transparent); } }
+@keyframes answer-glow { 0%, 100% { filter: drop-shadow(0 0 0 color-mix(in oklab, var(--highlight) 0%, transparent)); } 50% { filter: drop-shadow(0 0 1.1cqw color-mix(in oklab, var(--highlight) 38%, transparent)); } }
+@keyframes stage-accent { 0% { background-position: 0% 0%, 100% 100%; } 100% { background-position: 25% 15%, 75% 85%; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
