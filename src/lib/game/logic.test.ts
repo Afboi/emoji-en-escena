@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { adjustScore, goTo, leaders, newGame, pauseTimer, roundInfo, startTimer, timerRemaining } from "./logic";
 import { SAMPLE_QUESTIONS } from "./sample";
+import { parseBank } from "./logic";
 
 describe("temporizador", () => {
   it("cuenta hacia atrás según la hora real y se pausa conservando el resto", () => {
@@ -53,5 +54,20 @@ describe("pantalla pública", () => {
     const end = nextStep(s);
     expect([end.showScoreboard, end.scoreTitle, end.index]).toEqual([true, "Fin de la ronda 1", 3]);
     expect(nextStep(end).index).toBe(4);
+  });
+});
+
+describe("banco de preguntas y variantes", () => {
+  it("mantiene las 36 preguntas del banco con alternativas de respuesta", () => {
+    expect(SAMPLE_QUESTIONS).toHaveLength(36);
+    expect(SAMPLE_QUESTIONS.every((question) => (question.acceptedAnswers?.length ?? 0) > 0)).toBe(true);
+  });
+
+  it("conserva las respuestas alternativas al importar/exportar el banco", () => {
+    const imported = parseBank(JSON.stringify(SAMPLE_QUESTIONS));
+    expect(imported).toHaveLength(36);
+    expect(imported.find((question) => question.id === "s4")?.acceptedAnswers).toContain("El Hombre Araña");
+    expect(imported.find((question) => question.id === "s6")?.acceptedAnswers).toContain("Parque Jurásico");
+    expect(imported.find((question) => question.id === "s1")?.acceptedAnswers).toContain("The Lion King");
   });
 });
