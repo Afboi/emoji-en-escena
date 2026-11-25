@@ -123,7 +123,7 @@ function StageInner({ state, now, waiting }: { state: PublicState | null; now: n
         <div className="flex gap-[1cqw] text-[1.5cqw] font-bold uppercase tracking-[0.2em] text-muted-foreground">
           <span>{q.kind === "serie" ? "📺 Serie" : "🎬 Película"}</span>·<span>{q.category}</span>
         </div>
-        <div key={state.index} className={`leading-none transition-all duration-700 anim-emoji-enter ${q.answer ? "text-[9cqw]" : "text-[15cqw] anim-emoji-loop"}`}>
+        <div key={state.index} className={`leading-none transition-all duration-700 anim-emoji-enter ${q.answer ? "text-[9cqw] anim-emoji-loop" : "text-[15cqw] anim-emoji-loop"}`}>
           {q.emojis}
         </div>
         {q.answer ? (
