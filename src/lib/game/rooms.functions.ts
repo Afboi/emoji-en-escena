@@ -110,13 +110,17 @@ function editDistance(a: string, b: string): number {
   }
   return prev[b.length];
 }
-function gradeAnswer(input: string, expected: string): { isCorrect: boolean; points: number } {
-  if (exactAnswer(input) === exactAnswer(expected)) return { isCorrect: true, points: 3 };
+function gradeAnswer(input: string, expected: string, aliases: string[] = []): { isCorrect: boolean; points: number } {
+  const candidates = [expected, ...aliases].filter((v) => v.trim());
+  const exact = exactAnswer(input);
+  if (candidates.some((candidate) => exact === exactAnswer(candidate))) return { isCorrect: true, points: 3 };
   const typed = normalizeAnswer(input);
-  const answer = normalizeAnswer(expected);
-  if (typed === answer) return { isCorrect: true, points: 1 };
-  const withoutArticle = answer.replace(/^(el|la|los|las|un|una)\s+/, "");
-  if (typed === withoutArticle || (typed.length >= 5 && editDistance(typed, answer) === 1)) return { isCorrect: true, points: 1 };
+  const normalized = candidates.map(normalizeAnswer);
+  if (normalized.some((answer) => typed === answer)) return { isCorrect: true, points: 1 };
+  if (normalized.some((answer) => {
+    const withoutArticle = answer.replace(/^(el|la|los|las|un|una|the|a|an)\s+/, "");
+    return typed === withoutArticle || (typed.length >= 5 && editDistance(typed, answer) === 1);
+  })) return { isCorrect: true, points: 1 };
   return { isCorrect: false, points: 0 };
 }
 
@@ -130,7 +134,7 @@ export const submitTheatreAnswer = createServerFn({ method: "POST" })
     if (error || !room || player.room_code !== data.code) throw new Error("Sala no válida.");
     const state = room.private_state as unknown as { theatreMode?: boolean; answerShown?: boolean; status?: string; index?: number; playlist?: { answer?: string }[]; timer?: { enabled?: boolean; running?: boolean; endsAt?: number | null; duration?: number } };
     if (state.theatreMode !== true || state.answerShown || state.status !== "playing" || !state.playlist?.[state.index ?? -1]) throw new Error("No hay una pregunta abierta.");
-    const grading = gradeAnswer(data.answer, state.playlist[state.index!].answer ?? "");
+    const grading = gradeAnswer(data.answer, state.playlist[state.index!].answer ?? "", state.playlist[state.index!].acceptedAnswers ?? []);
     const correct = grading.isCorrect;
     const remaining = state.timer?.endsAt ? Math.max(0, state.timer.endsAt - Date.now()) : 0;
     if (state.timer?.enabled && state.timer.running && remaining <= 0) throw new Error("Se acabó el tiempo para responder.");
