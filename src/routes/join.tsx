@@ -89,8 +89,8 @@ function JoinPage() {
           </div>;
         })() : state?.status === "playing" && state.current && !state.answerShown ? <div className="anim-rise flex flex-col gap-4">
           <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Pregunta {state.index + 1}</div>
-          <div key={state.index} className="text-6xl anim-emoji-enter">{state.current.emojis}</div>
-          {state.current.clues.map((clue,i)=><p key={i} className="rounded-lg bg-secondary p-2 text-sm anim-clue-enter" style={{ animationDelay: `${i * 100}ms` }}>💡 {clue}</p>)}
+          <div key={state.index} className="text-6xl anim-emoji-enter anim-emoji-loop">{state.current.emojis}</div>
+          {state.current.clues.map((clue,i)=><p key={i} className="rounded-lg bg-secondary p-2 text-sm anim-clue-enter anim-clue-loop" style={{ animationDelay: `${i * 100}ms` }}>💡 {clue}</p>)}
           {state.timer.enabled && <p className="text-highlight">¡Respondé antes de que termine el tiempo!</p>}
           {alreadySubmitted ? <div className="flex flex-col items-center gap-2 rounded-xl border border-success/30 bg-success/10 p-4 anim-answer-pop"><div className="text-3xl">✅</div><p className="font-bold">¡Respuesta enviada!</p><p className="text-sm text-muted-foreground">Tu respuesta quedó registrada. Esperá la siguiente pregunta.</p></div> : <form onSubmit={sendAnswer} className="flex flex-col gap-3"><input autoComplete="off" value={answer} onChange={e=>setAnswer(e.target.value)} placeholder="Tu respuesta…" className="h-12 rounded-xl border border-input bg-background px-4 text-center" disabled={busy} required/><button disabled={busy} className="rounded-xl bg-primary px-5 py-3 font-bold text-primary-foreground">{busy ? "Enviando…" : "Enviar respuesta"}</button></form>}
         </div> : <div className="anim-rise rounded-xl bg-secondary p-5"><div className="text-4xl">⏳</div><p className="mt-2 font-bold">{state?.theatreJoinOpen ? "Esperando la próxima pregunta…" : "El animador está preparando la partida"}</p></div>}
