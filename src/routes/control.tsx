@@ -303,7 +303,7 @@ function TheatreTab({ state, update, players }: { state: GameState; update: Upda
     ...rankedPlayers.map((p, i) => [i + 1, p.nickname, p.score]),
   ];
   const downloadReport = () => {
-    const csv = "\\uFEFF" + reportRows.map((row) => row.map(escapeCsv).join(";")).join("\\r\\n");
+    const csv = "\uFEFF" + reportRows.map((row) => row.map(escapeCsv).join(";")).join("\r\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
