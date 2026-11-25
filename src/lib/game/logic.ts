@@ -85,6 +85,7 @@ export function normalizeQuestion(raw: unknown): Question | null {
     id: str(r["id"]) || uid(),
     emojis,
     answer,
+    acceptedAnswers: Array.isArray(r["acceptedAnswers"]) ? r["acceptedAnswers"].filter((a): a is string => typeof a === "string" && a.trim() !== "") : [],
     category: str(r["category"], "General"),
     difficulty: diff === "fácil" || diff === "difícil" ? diff : "media",
     kind: str(r["kind"]) === "serie" ? "serie" : "película",
