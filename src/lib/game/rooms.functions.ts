@@ -118,8 +118,17 @@ function gradeAnswer(input: string, expected: string, aliases: string[] = []): {
   const normalized = candidates.map(normalizeAnswer);
   if (normalized.some((answer) => typed === answer)) return { isCorrect: true, points: 1 };
   if (normalized.some((answer) => {
-    const withoutArticle = answer.replace(/^(el|la|los|las|un|una|the|a|an)\s+/, "");
-    return typed === withoutArticle || (typed.length >= 5 && editDistance(typed, answer) === 1);
+    const withoutArticle = answer.replace(/^(el|la|los|las|un|una|the|a|an)\\s+/, "");
+    if (typed === withoutArticle || (typed.length >= 5 && editDistance(typed, answer) === 1)) return true;
+
+    // Tolerate a small typo in each word of bilingual titles.
+    // Short words still need to match exactly to avoid false positives.
+    const typedWords = typed.split(" ");
+    const answerWords = withoutArticle.split(" ");
+    return typedWords.length === answerWords.length && typedWords.every((word, index) => {
+      const target = answerWords[index];
+      return word === target || (word.length >= 4 && target.length >= 4 && editDistance(word, target) === 1);
+    });
   })) return { isCorrect: true, points: 1 };
   return { isCorrect: false, points: 0 };
 }
