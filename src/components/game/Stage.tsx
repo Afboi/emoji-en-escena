@@ -123,18 +123,18 @@ function StageInner({ state, now, waiting }: { state: PublicState | null; now: n
         <div className="flex gap-[1cqw] text-[1.5cqw] font-bold uppercase tracking-[0.2em] text-muted-foreground">
           <span>{q.kind === "serie" ? "📺 Serie" : "🎬 Película"}</span>·<span>{q.category}</span>
         </div>
-        <div key={state.index} className={`leading-none transition-all duration-700 anim-emoji-enter ${q.answer ? "text-[9cqw]" : "text-[15cqw]"}`}>
+        <div key={state.index} className={`leading-none transition-all duration-700 anim-emoji-enter ${q.answer ? "text-[9cqw]" : "text-[15cqw] anim-emoji-loop"}`}>
           {q.emojis}
         </div>
         {q.answer ? (
           <div className="flex flex-col items-center gap-[0.8cqw] text-center">
-            <div className="font-display text-[6cqw] font-black leading-tight text-show-gradient anim-answer-pop">{q.answer}</div>
+            <div className="font-display text-[6cqw] font-black leading-tight text-show-gradient anim-answer-pop anim-answer-glow">{q.answer}</div>
             {q.solution && <p className="max-w-[70cqw] text-[1.9cqw] text-muted-foreground anim-rise">{q.solution}</p>}
           </div>
         ) : (
           <div className="flex min-h-[10cqw] flex-col items-center gap-[0.9cqw]">
             {q.clues.map((c, i) => (
-              <div key={i} className="flex items-center gap-[1.2cqw] rounded-full border border-border bg-card/70 px-[2.2cqw] py-[0.8cqw] text-[2.2cqw] font-semibold anim-clue-enter">
+              <div key={i} className="flex items-center gap-[1.2cqw] rounded-full border border-border bg-card/70 px-[2.2cqw] py-[0.8cqw] text-[2.2cqw] font-semibold anim-clue-enter anim-clue-loop">
                 <span className="font-display text-[1.6cqw] font-black text-highlight">PISTA {i + 1}</span>
                 {c}
               </div>
