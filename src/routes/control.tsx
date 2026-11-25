@@ -287,6 +287,47 @@ function LiveTab({ state, update, now, offset, screenPath, screens }: { state: G
 }
 
 function TheatreTab({ state, update, players }: { state: GameState; update: Update; players: { id: string; nickname: string; score: number }[] }) {
+  const rankedPlayers = [...players].sort((a, b) => b.score - a.score || a.nickname.localeCompare(b.nickname));
+  const reportDate = new Date().toLocaleString("es-CR");
+  const escapeCsv = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
+  const reportRows = [
+    ["Emoji en Escena · Reporte de partida"],
+    ["Partida", state.title],
+    ["Sala", state.room],
+    ["Fecha de exportación", reportDate],
+    ["Estado", STATUS_LABEL[state.status]],
+    ["Preguntas en la partida", state.playlist.length],
+    ["Participantes", rankedPlayers.length],
+    [],
+    ["Posición", "Participante", "Puntos"],
+    ...rankedPlayers.map((p, i) => [i + 1, p.nickname, p.score]),
+  ];
+  const downloadReport = () => {
+    const csv = "\\uFEFF" + reportRows.map((row) => row.map(escapeCsv).join(";")).join("\\r\\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `emoji-en-escena-${state.room}-resultados.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  const copySummary = async () => {
+    const winners = rankedPlayers.length ? rankedPlayers.filter((p) => p.score === rankedPlayers[0]!.score) : [];
+    const text = [
+      `🎬 ${state.title} · Emoji en Escena`,
+      `Sala: ${state.room} · ${reportDate}`,
+      winners.length ? `🏆 ${winners.map((p) => p.nickname).join(" y ")} — ${rankedPlayers[0]!.score} pts` : "Sin participantes registrados",
+      "",
+      ...rankedPlayers.map((p, i) => `${i + 1}. ${p.nickname}: ${p.score} pts`),
+    ].join("\\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      window.alert("Resumen copiado. ¡Listo para compartir!");
+    } catch {
+      window.prompt("Copiá el resumen de la partida:", text);
+    }
+  };
   return (
     <div className="grid gap-4 p-5 xl:grid-cols-[1fr_1fr]">
         <Panel title="Modo teatro interactivo" right={<span className={state.theatreMode ? "text-success text-xs font-bold" : "text-muted-foreground text-xs"}>{state.theatreMode ? "ACTIVO" : "DESACTIVADO"}</span>}>
@@ -329,6 +370,14 @@ function TheatreTab({ state, update, players }: { state: GameState; update: Upda
             </div>)}
           </div>
         )}
+      </Panel>
+      <Panel title="Reporte de partida" right={<span className="text-xs text-muted-foreground">Resultados actuales</span>}>
+        <p className="mb-3 text-sm text-muted-foreground">Guardá el marcador de esta sala o compartí un resumen con el equipo de animación.</p>
+        <div className="flex flex-wrap gap-2">
+          <Btn variant="primary" disabled={players.length === 0} onClick={downloadReport}>📥 Descargar resultados (CSV)</Btn>
+          <Btn disabled={players.length === 0} onClick={() => void copySummary()}>📋 Copiar resumen</Btn>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">El archivo se puede abrir en Excel o Google Sheets e incluye el ranking y los puntos registrados.</p>
       </Panel>
       <Panel title="Cómo funciona">
         <ol className="list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
