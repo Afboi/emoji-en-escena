@@ -13,7 +13,7 @@ function Timer({ state, now }: { state: PublicState; now: number }) {
   const pct = state.timer.duration > 0 ? (ms / (state.timer.duration * 1000)) * 100 : 0;
   return (
     <div className="flex flex-col items-end gap-[0.6cqw]">
-      <div className={`font-display text-[4.2cqw] font-black leading-none tabular-nums ${secs === 0 ? "text-primary anim-pulse-soft" : low ? "text-primary" : "text-highlight"}`}>
+      <div className={`font-display text-[4.2cqw] font-black leading-none tabular-nums ${secs === 0 ? "text-primary anim-pulse-soft" : low ? "text-primary anim-timer-urgent" : "text-highlight"}`}>
         {secs === 0 ? "¡Tiempo!" : `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`}
       </div>
       <div className="h-[0.5cqw] w-[14cqw] overflow-hidden rounded-full bg-secondary">
@@ -34,7 +34,7 @@ function Scoreboard({ state, title }: { state: PublicState; title: string }) {
       {sorted.map((t, i) => {
         const idx = state.teams.findIndex((x) => x.id === t.id) % 4;
         return (
-          <div key={t.id} className="flex items-center gap-[2cqw] anim-rise" style={{ animationDelay: `${i * 90}ms` }}>
+          <div key={t.id} className="flex items-center gap-[2cqw] anim-score-enter" style={{ animationDelay: `${i * 100}ms` }}>
             <div className="w-[22cqw] truncate text-[2.4cqw] font-bold">{t.name}</div>
             <div className="h-[3.2cqw] flex-1 overflow-hidden rounded-full bg-secondary">
               <div className={`h-full rounded-full ${TEAM_BG[idx]} transition-[width] duration-700`} style={{ width: `${Math.max(4, (t.score / max) * 100)}%` }} />
@@ -49,7 +49,7 @@ function Scoreboard({ state, title }: { state: PublicState; title: string }) {
 
 export function Stage({ state, now, waiting }: { state: PublicState | null; now: number; waiting?: string | undefined }) {
   return (
-    <div className="@container relative aspect-video w-full overflow-hidden bg-stage-gradient text-foreground select-none">
+    <div className="@container relative aspect-video w-full overflow-hidden bg-stage-gradient anim-stage-glow text-foreground select-none">
       <StageInner state={state} now={now} waiting={waiting} />
     </div>
   );
@@ -123,18 +123,18 @@ function StageInner({ state, now, waiting }: { state: PublicState | null; now: n
         <div className="flex gap-[1cqw] text-[1.5cqw] font-bold uppercase tracking-[0.2em] text-muted-foreground">
           <span>{q.kind === "serie" ? "📺 Serie" : "🎬 Película"}</span>·<span>{q.category}</span>
         </div>
-        <div key={state.index} className={`leading-none transition-all duration-700 anim-pop ${q.answer ? "text-[9cqw]" : "text-[15cqw]"}`}>
+        <div key={state.index} className={`leading-none transition-all duration-700 anim-emoji-enter ${q.answer ? "text-[9cqw]" : "text-[15cqw]"}`}>
           {q.emojis}
         </div>
         {q.answer ? (
           <div className="flex flex-col items-center gap-[0.8cqw] text-center">
-            <div className="font-display text-[6cqw] font-black leading-tight text-show-gradient anim-pop">{q.answer}</div>
+            <div className="font-display text-[6cqw] font-black leading-tight text-show-gradient anim-answer-pop">{q.answer}</div>
             {q.solution && <p className="max-w-[70cqw] text-[1.9cqw] text-muted-foreground anim-rise">{q.solution}</p>}
           </div>
         ) : (
           <div className="flex min-h-[10cqw] flex-col items-center gap-[0.9cqw]">
             {q.clues.map((c, i) => (
-              <div key={i} className="flex items-center gap-[1.2cqw] rounded-full border border-border bg-card/70 px-[2.2cqw] py-[0.8cqw] text-[2.2cqw] font-semibold anim-rise">
+              <div key={i} className="flex items-center gap-[1.2cqw] rounded-full border border-border bg-card/70 px-[2.2cqw] py-[0.8cqw] text-[2.2cqw] font-semibold anim-clue-enter">
                 <span className="font-display text-[1.6cqw] font-black text-highlight">PISTA {i + 1}</span>
                 {c}
               </div>
